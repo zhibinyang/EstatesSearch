@@ -1,5 +1,6 @@
 *.pyc
 .idea
 db_config.py
+data
 Scrapy/db_config.py
 
