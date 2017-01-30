@@ -6,11 +6,13 @@ import config
 import time
 import re
 import database
+import sys
 import datetime
 class xiaoqu_menu:
     def __init__(self,base_url,district):
         self.district = district
         url = base_url + district + '/'
+        print "Base URL:",url
         r = requests.get(url)
         r.encoding = 'utf-8'
         self.basic_parser(r)
@@ -26,8 +28,11 @@ class xiaoqu_menu:
             self.amount = int(num_span.text.strip())
         except Exception as e:
             self.amount = 0
+            print bs.text.encode('utf-8')
             print e
             print "Xiaoqu amount structure changed, need to check this part"
+            print "May Got Blocked, Exiting"
+            sys.exit(1)
         try:
             xiaoqu_ul = bs.find_all('ul',attrs={'class':'listContent'})
             if len(xiaoqu_ul) != 1:
@@ -41,6 +46,7 @@ class xiaoqu_menu:
             page_string = page_div[0].attrs['page-data']
             self.total_page = eval(page_string)['totalPage']
         except Exception as e:
+            self.total_page = 0
             print e
             print "Xiaoqu list page structure changed, need to check this part"
 
@@ -50,6 +56,7 @@ class xiaoqu_menu:
         for i in range(self.total_page):
             print "Page",i+1
             url = self.baseurl + config.page_key + (i+1).__str__() + '/'
+            print "Current URL:",url
             r = requests.get(url)
             r.encoding = 'utf-8'
             bs = BeautifulSoup(r.text, "html.parser")
@@ -62,11 +69,11 @@ class xiaoqu_menu:
                     xq = self.xiaoqu_basic_parser(xiaoqu_li)
                     self.xiaoqu_price_parser(xiaoqu_li,xq)
                     db.insert('xiaoqu', ['xiaoqu', 'district', 'year', 'price','date'], [xq.getName(), xq.getDistrict(), xq.getYear(), xq.getPrice(),datetime.date.today()])
-                    print xq.getName(),xq.getDistrict(),xq.getYear(),xq.getPrice()
+                    # print xq.getName(),xq.getDistrict(),xq.getYear(),xq.getPrice()
                 except Exception as e:
                     print e
                 #print xiaoqu_li
-            time.sleep(1)
+            time.sleep(180)
     def xiaoqu_basic_parser(self,xiaoqu_bs):
         # Get xiaoqu Title
         title_div = xiaoqu_bs.find_all('div',attrs={'class':'title'})
