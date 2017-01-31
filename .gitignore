@@ -1,4 +1,5 @@
 *.pyc
+.DS_Store
 .idea
 db_config.py
 data
